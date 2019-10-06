@@ -5,10 +5,12 @@ using UnityEngine;
 public class UIManager : MonoBehaviour
 {
     public static UIManager instance;
+
+    [Header("Modes")]
     public Mode[] modes;
     public Mode currentMode;
-    public ModeStaate startingMode;
-    
+    public ModeState startingMode;
+
     [Header("Animation")]
     public float animationInTime = 0.5f;
     public float animationOutTime = 0.25f;
@@ -18,45 +20,50 @@ public class UIManager : MonoBehaviour
     public void Awake()
     {
         if(instance != null)
+        {
             Destroy(this);
-        
+        }
         instance = this;
     }
 
-    private void Start()
+    private void Statrt()
     {
-        foreach(Mode mode in modes)
+        foreach (Mode mode in modes)
         {
-            mode.OnModeDisabled();
+            mode.onModeDisabled();
         }
+        SetMode(startingMode);
     }
 
     public void SetMode(ModeState state)
     {
         if(currentMode != null)
         {
-            StartCoroutine(AnimateModeAlpha(currentMode, 0, animationOutTime, 0));
+            StartCoroutine(AnimateModeAlpha(currentMode,0,animationOutTime,0));
         }
 
         if(state == ModeState.None)
+        {
             return;
-        
+        }
+
         currentMode = GetMode(state);
 
-        StartCoroutine(AnimateModeAlpha(currentMode, 1, animationInTime, animationOutTime));
+        StartCoroutine(AnimateModeAlpha(currentMode,1,animationInTime,animationOutTime));
     }
 
     public Mode GetMode(ModeState state)
     {
-        foreach(Mode mode in modes)
+        foreach (Mode mode in modes)
         {
             if(mode.state == state)
                 return mode;
         }
+        
         return null;
     }
-    
-    public IEnumerator AnimateModeAlpha(Mode mode, float targetAlpha, float time, float delay)
+
+    public IEnumerator AnimateModeAlpha(Mode mode,float targetAlpha, float time ,float delay)
     {
         yield return new WaitForSeconds(delay);
 
@@ -65,16 +72,31 @@ public class UIManager : MonoBehaviour
 
         while(elapsedTime < time)
         {
-            mode.canvasGroup.alpha = Mathf.Lerp(currentAlpha, targetAlpha, animationCurve.Evaluate(elapsedTime/time));
+            mode.canvasGroup.alpha = Mathf.Lerp(currentAlpha,targetAlpha,animationCurve.Evaluate(elapsedTime/time));
 
-            elapsedTime += time.deltaTime;
-            yield return new WaitForEndOfFrame(); 
+            elapsedTime += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
         }
 
         if(targetAlpha == 0)
-            mode.OnModeDisabled();
+        {
+            mode.onModeDisabled();
+        }
         else if(targetAlpha == 1)
-            mode.OnModeEnabled();
+        {
+            mode.onModeEnabled();
+        }
+    }
 
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
     }
 }
